@@ -296,6 +296,7 @@ go test ./... -v
 ## Validation Status
 
 - Concurrency semantics are regression-checked with [Porcupine](https://github.com/anishathalye/porcupine) linearizability histories for stack, queue, counter, sorted list, and ring buffer operations.
+- A dedicated formal verification package lives in [verification/README.md](/Users/sanskar/dev/Research/Projects/Lock-Free-Data-Structure/verification/README.md) and records the shared assumptions, invariants, and proof obligations for each structure.
 - The container image was exercised locally with authenticated login, health probes, session APIs, and metrics scraping.
 - The Kubernetes manifest was exercised in a live `kind` cluster. The deployment model is intentionally a single-replica `StatefulSet` with a persistent volume because the web visualizer is stateful.
 - GitHub Actions security jobs were exercised locally with `act`, including `govulncheck` and the web npm audit workflow.
