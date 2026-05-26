@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "generated_at": "2026-05-26T07:36:46.313884Z",
+  "tenants": {
+    "default": {
+      "stack": [],
+      "queue": [],
+      "ringbuffer": {
+        "capacity": 16,
+        "overwrite": false,
+        "items": null
+      },
+      "counter": 0,
+      "list": []
+    },
+    "tenant-smoke": {
+      "stack": [
+        11,
+        11
+      ],
+      "queue": [
+        21
+      ],
+      "ringbuffer": {
+        "capacity": 16,
+        "overwrite": false,
+        "items": null
+      },
+      "counter": 1,
+      "list": [
+        5
+      ]
+    }
+  }
+}
