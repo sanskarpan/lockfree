@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http/httptest"
+	"os"
 	"strconv"
 	"sync"
 	"testing"
@@ -13,7 +14,7 @@ func TestAuthenticatedServiceSoak(t *testing.T) {
 		t.Skip("skipping soak test in short mode")
 	}
 
-	const workers = 6
+	workers := envInt(t, "LOCKFREE_SOAK_WORKERS", 6)
 	cfg := validTestConfig(t)
 	users := make([]testUser, 0, workers+1)
 	for worker := 0; worker < workers; worker++ {
@@ -36,7 +37,7 @@ func TestAuthenticatedServiceSoak(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	const iterations = 40
+	iterations := envInt(t, "LOCKFREE_SOAK_ITERATIONS", 40)
 
 	var wg sync.WaitGroup
 	for worker := 0; worker < workers; worker++ {
@@ -92,4 +93,19 @@ func TestAuthenticatedServiceSoak(t *testing.T) {
 		t.Fatalf("expected viewer mutation to be rejected, got %+v", reply)
 	}
 	time.Sleep(25 * time.Millisecond)
+}
+
+func envInt(t *testing.T, name string, fallback int) int {
+	t.Helper()
+
+	raw := os.Getenv(name)
+	if raw == "" {
+		return fallback
+	}
+
+	value, err := strconv.Atoi(raw)
+	if err != nil || value <= 0 {
+		t.Fatalf("invalid %s value %q", name, raw)
+	}
+	return value
 }
