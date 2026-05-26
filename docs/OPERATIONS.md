@@ -57,6 +57,16 @@ The repository includes a scheduled soak workflow in `.github/workflows/soak.yml
 - It increases the authenticated soak test workload using `LOCKFREE_SOAK_WORKERS=12` and `LOCKFREE_SOAK_ITERATIONS=250`.
 - It keeps the extended load test separate from the fast CI path so pull-request validation stays responsive.
 
+## Observability
+
+- Prometheus alert rules live in `deploy/monitoring/prometheus-alerts.yaml`.
+- Grafana dashboard definitions live in `deploy/monitoring/grafana-dashboard.json`.
+- Alertmanager routing lives in `deploy/monitoring/alertmanager.yml`.
+
+The dashboard tracks the service-ready gauge, active WebSocket connections, snapshot freshness, tenant count, HTTP 5xx rate, authentication failures, rate-limit rejections, persistence operations, and WebSocket error volume.
+
+The default Alertmanager routing splits notifications by severity so `critical`, `high`, and `medium` alerts can be pointed at different webhook endpoints or downstream notification systems.
+
 ## Secret Rotation
 
 1. Generate a new `LOCKFREE_SESSION_SECRET`.
