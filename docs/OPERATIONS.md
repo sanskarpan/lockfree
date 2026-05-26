@@ -48,6 +48,15 @@ helm install lockfree ./deploy/helm/lockfree \
 
 The chart intentionally deploys a single-replica `StatefulSet` with persistent local storage. It is not safe to scale horizontally unless the application gains an external shared state layer.
 
+## Soak Automation
+
+The repository includes a scheduled soak workflow in `.github/workflows/soak.yml`.
+
+- It runs weekly on Sunday at 02:00 UTC.
+- It also supports manual dispatch.
+- It increases the authenticated soak test workload using `LOCKFREE_SOAK_WORKERS=12` and `LOCKFREE_SOAK_ITERATIONS=250`.
+- It keeps the extended load test separate from the fast CI path so pull-request validation stays responsive.
+
 ## Secret Rotation
 
 1. Generate a new `LOCKFREE_SESSION_SECRET`.
