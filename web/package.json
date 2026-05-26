@@ -1,0 +1,12 @@
+{
+  "name": "lockfree-web-smoke",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "install:browsers": "playwright install chromium",
+    "smoke": "node smoke.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.60.0"
+  }
+}
