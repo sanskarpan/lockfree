@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | Lock-Free Data Structures Visualizer</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="login-page">
+    <main class="login-shell">
+        <section class="login-card">
+            <div class="login-copy">
+                <p class="eyebrow">Lock-Free Control Plane</p>
+                <h1>Sign in to your tenant workspace</h1>
+                <p>Authenticated sessions are isolated per tenant and scoped by role. Operators can mutate state; viewers can inspect without write access.</p>
+            </div>
+
+            <form id="login-form" class="login-form">
+                <label class="form-label" for="username">Username</label>
+                <input id="username" name="username" type="text" autocomplete="username" required>
+
+                <label class="form-label" for="password">Password</label>
+                <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+                <button class="btn btn-primary login-submit" type="submit">Sign In</button>
+                <div id="login-message" class="message" hidden></div>
+            </form>
+        </section>
+    </main>
+
+    <script src="/static/login.js"></script>
+</body>
+</html>
