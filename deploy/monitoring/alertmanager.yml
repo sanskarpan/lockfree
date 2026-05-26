@@ -1,0 +1,38 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: default
+  group_by: ["alertname", "severity"]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - matchers:
+        - severity = "critical"
+      receiver: critical
+      continue: true
+    - matchers:
+        - severity = "high"
+      receiver: high
+    - matchers:
+        - severity = "medium"
+      receiver: medium
+
+receivers:
+  - name: default
+    webhook_configs:
+      - url: http://alert-router.monitoring.svc.cluster.local:8080/default
+        send_resolved: true
+  - name: critical
+    webhook_configs:
+      - url: http://alert-router.monitoring.svc.cluster.local:8080/critical
+        send_resolved: true
+  - name: high
+    webhook_configs:
+      - url: http://alert-router.monitoring.svc.cluster.local:8080/high
+        send_resolved: true
+  - name: medium
+    webhook_configs:
+      - url: http://alert-router.monitoring.svc.cluster.local:8080/medium
+        send_resolved: true
