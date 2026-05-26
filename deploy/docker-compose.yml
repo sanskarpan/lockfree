@@ -1,0 +1,24 @@
+services:
+  lockfree-visualizer:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: lockfree-visualizer:local
+    ports:
+      - "8081:8081"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8081
+      LOCKFREE_SESSION_SECRET: ${LOCKFREE_SESSION_SECRET:?set LOCKFREE_SESSION_SECRET}
+      LOCKFREE_ADMIN_API_TOKEN: ${LOCKFREE_ADMIN_API_TOKEN:-}
+      LOCKFREE_USERS_FILE: /app/config/users.json
+      LOCKFREE_TRUST_PROXY_HEADERS: "true"
+    volumes:
+      - ../data:/app/data
+      - ./users.example.json:/app/config/users.json:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8081/readyz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
