@@ -1,0 +1,9 @@
+.git
+.github
+node_modules
+web/node_modules
+coverage.out
+benchmark.txt
+data
+tmp
+*.log

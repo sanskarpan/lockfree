@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "users": [
+    {
+      "username": "admin",
+      "password_hash": "REPLACE_WITH_BCRYPT_HASH",
+      "tenant": "default",
+      "role": "admin"
+    },
+    {
+      "username": "viewer",
+      "password_hash": "REPLACE_WITH_BCRYPT_HASH",
+      "tenant": "default",
+      "role": "viewer"
+    }
+  ]
+}

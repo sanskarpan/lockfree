@@ -1,0 +1,38 @@
+groups:
+  - name: lockfree-visualizer
+    rules:
+      - alert: LockfreeVisualizerUnavailable
+        expr: lockfree_service_ready == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Lock-Free visualizer is not ready
+          description: The service has been unready for more than 5 minutes.
+
+      - alert: LockfreePersistenceErrors
+        expr: increase(lockfree_persistence_operations_total{result=~"save_error|backup_error"}[15m]) > 0
+        for: 5m
+        labels:
+          severity: high
+        annotations:
+          summary: Persistence failures detected
+          description: Snapshot or backup writes have failed in the last 15 minutes.
+
+      - alert: LockfreeAuthFailuresSpike
+        expr: increase(lockfree_auth_attempts_total{result=~"invalid_credentials|origin_rejected|bad_request"}[10m]) > 25
+        for: 10m
+        labels:
+          severity: medium
+        annotations:
+          summary: Authentication failures spiking
+          description: Investigate possible brute force attempts or client misconfiguration.
+
+      - alert: LockfreeRateLimitPressure
+        expr: increase(lockfree_rate_limit_rejections_total[10m]) > 100
+        for: 10m
+        labels:
+          severity: medium
+        annotations:
+          summary: Rate limiting is actively shedding traffic
+          description: Review client behavior or capacity because the service is dropping requests.
