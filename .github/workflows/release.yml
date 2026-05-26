@@ -1,0 +1,114 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Build release artifacts and changelog
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="${GITHUB_REF_NAME}"
+          previous_tag="$(git describe --tags --abbrev=0 "${GITHUB_SHA}^" 2>/dev/null || true)"
+
+          rm -rf dist
+          mkdir -p dist
+
+          if [ -n "${previous_tag}" ]; then
+            range="${previous_tag}..${GITHUB_SHA}"
+          else
+            first_commit="$(git rev-list --max-parents=0 HEAD | tail -n 1)"
+            range="${first_commit}..${GITHUB_SHA}"
+          fi
+
+          {
+            echo "# ${version}"
+            echo
+            echo "Release notes for ${version}."
+            echo
+            echo "## Changes"
+            git log --no-merges --pretty=format:'- %s (%h)' "${range}"
+          } > dist/CHANGELOG.md
+
+          targets=(
+            "linux/amd64"
+            "linux/arm64"
+            "darwin/amd64"
+            "darwin/arm64"
+            "windows/amd64"
+          )
+
+          for target in "${targets[@]}"; do
+            IFS=/ read -r goos goarch <<<"${target}"
+            ext=""
+            archive_ext="tar.gz"
+            if [ "${goos}" = "windows" ]; then
+              ext=".exe"
+              archive_ext="zip"
+            fi
+
+            bundle="lockfree_${version}_${goos}_${goarch}"
+            outdir="dist/${bundle}"
+            mkdir -p "${outdir}"
+
+            GOOS="${goos}" GOARCH="${goarch}" CGO_ENABLED=0 \
+              go build -trimpath -ldflags="-s -w" -o "${outdir}/lockfree-web${ext}" ./web
+            GOOS="${goos}" GOARCH="${goarch}" CGO_ENABLED=0 \
+              go build -trimpath -ldflags="-s -w" -o "${outdir}/hashpassword${ext}" ./cmd/hashpassword
+
+            cp LICENSE README.md RELEASING.md "${outdir}/"
+
+            if [ "${archive_ext}" = "zip" ]; then
+              (cd "${outdir}" && zip -q -r "../${bundle}.zip" .)
+            else
+              tar -C "${outdir}" -czf "dist/${bundle}.tar.gz" .
+            fi
+
+            rm -rf "${outdir}"
+          done
+
+          sha256sum dist/*.{tar.gz,zip} > dist/checksums.txt
+          cosign sign-blob \
+            --yes \
+            --output-signature dist/checksums.txt.sig \
+            --output-certificate dist/checksums.txt.pem \
+            dist/checksums.txt
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "${GITHUB_REF_NAME}" \
+            dist/*.tar.gz \
+            dist/*.zip \
+            dist/checksums.txt \
+            dist/checksums.txt.sig \
+            dist/checksums.txt.pem \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file dist/CHANGELOG.md
