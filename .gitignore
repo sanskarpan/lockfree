@@ -35,6 +35,7 @@ bin/
 dist/
 build/
 .bin/
+data/backups/
 
 # Temporary files
 *.tmp
