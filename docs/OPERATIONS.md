@@ -36,6 +36,18 @@
 
 The repository has been exercised through that path, not just statically configured for it.
 
+## Helm Deployment
+
+Use the Helm chart in `deploy/helm/lockfree` when you want a parameterized deployment that still matches the current stateful topology.
+
+```bash
+helm install lockfree ./deploy/helm/lockfree \
+  --namespace lockfree \
+  --create-namespace
+```
+
+The chart intentionally deploys a single-replica `StatefulSet` with persistent local storage. It is not safe to scale horizontally unless the application gains an external shared state layer.
+
 ## Secret Rotation
 
 1. Generate a new `LOCKFREE_SESSION_SECRET`.

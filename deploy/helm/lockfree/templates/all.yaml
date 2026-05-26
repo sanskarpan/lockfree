@@ -1,0 +1,153 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-secrets
+  labels:
+    app.kubernetes.io/name: lockfree
+    app.kubernetes.io/instance: {{ .Release.Name }}
+type: Opaque
+stringData:
+  LOCKFREE_SESSION_SECRET: {{ .Values.secrets.sessionSecret | quote }}
+  LOCKFREE_ADMIN_API_TOKEN: {{ .Values.secrets.adminApiToken | quote }}
+  users.json: |-
+{{ .Values.secrets.usersJson | nindent 4 }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app.kubernetes.io/name: lockfree
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  serviceName: {{ .Release.Name }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: lockfree
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: lockfree
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8081
+              name: http
+          env:
+            - name: HOST
+              value: {{ .Values.app.host | quote }}
+            - name: PORT
+              value: {{ .Values.app.port | quote }}
+            - name: LOCKFREE_USERS_FILE
+              value: /app/config/users.json
+            - name: LOCKFREE_TRUST_PROXY_HEADERS
+              value: {{ .Values.app.trustProxyHeaders | quote }}
+            - name: LOCKFREE_SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: LOCKFREE_SESSION_SECRET
+            - name: LOCKFREE_ADMIN_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: LOCKFREE_ADMIN_API_TOKEN
+          volumeMounts:
+            - name: users
+              mountPath: /app/config/users.json
+              subPath: users.json
+              readOnly: true
+            - name: data
+              mountPath: /app/data
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: users
+          secret:
+            secretName: {{ .Release.Name }}-secrets
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app.kubernetes.io/name: lockfree
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  selector:
+    app.kubernetes.io/name: lockfree
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http
+  type: {{ .Values.service.type }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app.kubernetes.io/name: lockfree
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: lockfree
+      app.kubernetes.io/instance: {{ .Release.Name }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app.kubernetes.io/name: lockfree
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: lockfree
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes: ["Ingress", "Egress"]
+  ingress:
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8081
+  egress:
+    - {}
