@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lock-Free Data Structures Visualizer</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <div>
+                <h1>Lock-Free Data Structures Visualizer</h1>
+                <p>Real-time visualization of concurrent data structures in Go</p>
+            </div>
+            <div class="session-panel">
+                <div class="session-pill">
+                    <span id="session-user">anonymous</span>
+                    <span class="session-divider">•</span>
+                    <span id="session-role">admin</span>
+                    <span class="session-divider">•</span>
+                    <span id="session-tenant">default</span>
+                </div>
+                <button id="logout-btn" class="btn btn-secondary session-button" type="button">Log Out</button>
+            </div>
+        </div>
+        <div class="header-meta">
+            <div class="connection-status">
+                <span id="status-indicator" class="status-disconnected"></span>
+                <span id="status-text">Disconnected</span>
+            </div>
+            <div id="access-mode" class="access-badge">Read/Write</div>
+        </div>
+    </header>
+
+    <main>
+        <div id="global-message" class="message" hidden></div>
+
+        <!-- Stack Section -->
+        <section class="data-structure">
+            <div class="ds-header">
+                <h2>Lock-Free Stack (Treiber)</h2>
+                <div class="ds-info">
+                    <span class="info-label">Length:</span>
+                    <span id="stack-length" class="info-value">0</span>
+                </div>
+            </div>
+            <div class="ds-content">
+                <div class="visualization">
+                    <div id="stack-viz" class="stack-container">
+                        <div class="empty-state">Stack is empty</div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <div class="input-group">
+                        <input type="number" id="stack-input" placeholder="Enter value" value="42">
+                        <button id="stack-push-btn" class="btn btn-primary" type="button" data-requires-write="true">Push</button>
+                        <button id="stack-pop-btn" class="btn btn-secondary" type="button" data-requires-write="true">Pop</button>
+                        <button id="stack-clear-btn" class="btn btn-danger" type="button" data-requires-write="true">Clear</button>
+                    </div>
+                    <div class="algorithm-info">
+                        <strong>Algorithm:</strong> CAS on head pointer • <strong>Complexity:</strong> O(1)
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Queue Section -->
+        <section class="data-structure">
+            <div class="ds-header">
+                <h2>Lock-Free Queue (Michael-Scott)</h2>
+                <div class="ds-info">
+                    <span class="info-label">Length:</span>
+                    <span id="queue-length" class="info-value">0</span>
+                </div>
+            </div>
+            <div class="ds-content">
+                <div class="visualization">
+                    <div id="queue-viz" class="queue-container">
+                        <div class="queue-label">Head →</div>
+                        <div class="queue-items">
+                            <div class="empty-state">Queue is empty</div>
+                        </div>
+                        <div class="queue-label">← Tail</div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <div class="input-group">
+                        <input type="number" id="queue-input" placeholder="Enter value" value="42">
+                        <button id="queue-enqueue-btn" class="btn btn-primary" type="button" data-requires-write="true">Enqueue</button>
+                        <button id="queue-dequeue-btn" class="btn btn-secondary" type="button" data-requires-write="true">Dequeue</button>
+                        <button id="queue-clear-btn" class="btn btn-danger" type="button" data-requires-write="true">Clear</button>
+                    </div>
+                    <div class="algorithm-info">
+                        <strong>Algorithm:</strong> Sentinel node + CAS • <strong>Complexity:</strong> O(1)
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ring Buffer Section -->
+        <section class="data-structure">
+            <div class="ds-header">
+                <h2>Lock-Free Ring Buffer</h2>
+                <div class="ds-info">
+                    <span class="info-label">Length:</span>
+                    <span id="rb-length" class="info-value">0</span>
+                    <span class="info-label">Capacity:</span>
+                    <span id="rb-capacity" class="info-value">16</span>
+                    <span class="info-label">Available:</span>
+                    <span id="rb-available" class="info-value">16</span>
+                </div>
+            </div>
+            <div class="ds-content">
+                <div class="visualization">
+                    <div id="rb-viz" class="ringbuffer-container">
+                        <svg id="rb-svg" width="400" height="400" viewBox="0 0 400 400"></svg>
+                    </div>
+                </div>
+                <div class="controls">
+                    <div class="input-group">
+                        <input type="number" id="rb-input" placeholder="Enter value" value="42">
+                        <button id="rb-write-btn" class="btn btn-primary" type="button" data-requires-write="true">Write</button>
+                        <button id="rb-read-btn" class="btn btn-secondary" type="button" data-requires-write="true">Read</button>
+                        <button id="rb-clear-btn" class="btn btn-danger" type="button" data-requires-write="true">Clear</button>
+                    </div>
+                    <div class="algorithm-info">
+                        <strong>Algorithm:</strong> Sequence-based sync • <strong>Complexity:</strong> O(1)
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Counter Section -->
+        <section class="data-structure">
+            <div class="ds-header">
+                <h2>Lock-Free Counter</h2>
+                <div class="ds-info">
+                    <span class="info-label">Value:</span>
+                    <span id="counter-value" class="info-value counter-display">0</span>
+                </div>
+            </div>
+            <div class="ds-content">
+                <div class="visualization">
+                    <div id="counter-viz" class="counter-container">
+                        <div class="counter-bar">
+                            <div id="counter-bar-fill" class="counter-bar-fill"></div>
+                        </div>
+                        <div class="counter-number" id="counter-display">0</div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <div class="input-group">
+                        <button id="counter-inc-btn" class="btn btn-primary" type="button" data-requires-write="true">Increment</button>
+                        <button id="counter-dec-btn" class="btn btn-secondary" type="button" data-requires-write="true">Decrement</button>
+                        <input type="number" id="counter-input" placeholder="Add value" value="10">
+                        <button id="counter-add-btn" class="btn btn-primary" type="button" data-requires-write="true">Add</button>
+                        <button id="counter-reset-btn" class="btn btn-danger" type="button" data-requires-write="true">Reset</button>
+                    </div>
+                    <div class="algorithm-info">
+                        <strong>Algorithm:</strong> Atomic operations • <strong>Complexity:</strong> O(1)
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sorted List Section -->
+        <section class="data-structure">
+            <div class="ds-header">
+                <h2>Lock-Free Sorted List (Harris-Michael)</h2>
+                <div class="ds-info">
+                    <span class="info-label">Length:</span>
+                    <span id="list-length" class="info-value">0</span>
+                </div>
+            </div>
+            <div class="ds-content">
+                <div class="visualization">
+                    <div id="list-viz" class="list-container">
+                        <div class="empty-state">List is empty</div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <div class="input-group">
+                        <input type="number" id="list-input" placeholder="Enter key" value="42">
+                        <button id="list-insert-btn" class="btn btn-primary" type="button" data-requires-write="true">Insert</button>
+                        <button id="list-delete-btn" class="btn btn-secondary" type="button" data-requires-write="true">Delete</button>
+                        <button id="list-search-btn" class="btn btn-info" type="button">Search</button>
+                        <button id="list-clear-btn" class="btn btn-danger" type="button" data-requires-write="true">Clear</button>
+                    </div>
+                    <div class="algorithm-info">
+                        <strong>Algorithm:</strong> Atomic marking • <strong>Complexity:</strong> O(n)
+                    </div>
+                    <div id="list-message" class="message"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Performance Stats -->
+        <section class="stats-section">
+            <h2>Performance Metrics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Stack</h3>
+                    <p class="stat-value" id="stack-ops">0</p>
+                    <p class="stat-label">Operations</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Queue</h3>
+                    <p class="stat-value" id="queue-ops">0</p>
+                    <p class="stat-label">Operations</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Ring Buffer</h3>
+                    <p class="stat-value" id="rb-ops">0</p>
+                    <p class="stat-label">Operations</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Counter</h3>
+                    <p class="stat-value" id="counter-ops">0</p>
+                    <p class="stat-label">Operations</p>
+                </div>
+                <div class="stat-card">
+                    <h3>List</h3>
+                    <p class="stat-value" id="list-ops">0</p>
+                    <p class="stat-label">Operations</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Lock-Free Data Structures in Go • Built with WebSocket • Real-time Visualization</p>
+        <p>Algorithms: Treiber Stack • Michael-Scott Queue • Harris-Michael List • Sequence-Based Ring Buffer</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
