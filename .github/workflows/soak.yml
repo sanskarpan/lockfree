@@ -1,0 +1,25 @@
+name: Soak
+
+on:
+  schedule:
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+
+jobs:
+  soak:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Run extended authenticated soak test
+        env:
+          LOCKFREE_SOAK_WORKERS: "12"
+          LOCKFREE_SOAK_ITERATIONS: "250"
+        run: go test ./web -run TestAuthenticatedServiceSoak -v -count=1 -timeout=30m
