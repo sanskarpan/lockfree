@@ -16,15 +16,15 @@ jobs:
 
     steps:
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v6
       with:
         go-version-file: go.mod
 
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Cache Go modules
-      uses: actions/cache@v3
+      uses: actions/cache@v5
       with:
         path: |
           ~/.cache/go-build
@@ -50,7 +50,7 @@ jobs:
 
     - name: Upload coverage to Codecov
       if: matrix.os == 'ubuntu-latest'
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v6
       with:
         file: ./coverage.out
         flags: unittests
@@ -62,15 +62,15 @@ jobs:
 
     steps:
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v6
       with:
         go-version-file: go.mod
 
     - name: golangci-lint
-      uses: golangci/golangci-lint-action@v3
+      uses: golangci/golangci-lint-action@v9
       with:
         version: latest
         args: --timeout=5m
@@ -81,18 +81,18 @@ jobs:
 
     steps:
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v6
       with:
         go-version-file: go.mod
 
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Run benchmarks
       run: go test ./... -bench=. -benchmem -run=^$ | tee benchmark.txt
 
     - name: Upload benchmark results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v7
       with:
         name: benchmark-results
         path: benchmark.txt
@@ -103,12 +103,12 @@ jobs:
 
     steps:
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v6
       with:
         go-version-file: go.mod
 
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Build
       run: go build -v ./...
@@ -122,15 +122,15 @@ jobs:
 
     steps:
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
         go-version-file: go.mod
 
     - name: Set up Node
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: 22
         cache: npm
