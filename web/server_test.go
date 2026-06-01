@@ -46,7 +46,7 @@ func TestHTTPServesIndexFromRepoRootCWDAnonymous(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GET / failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("expected HTTP 200, got %d", resp.StatusCode)
@@ -82,7 +82,7 @@ func TestLoginSessionAndAuthenticatedIndex(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GET / failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusSeeOther {
 		t.Fatalf("expected redirect to login, got %d", resp.StatusCode)
 	}
@@ -98,7 +98,7 @@ func TestLoginSessionAndAuthenticatedIndex(t *testing.T) {
 	if err != nil {
 		t.Fatalf("login failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("expected login success, got %d", resp.StatusCode)
 	}
@@ -107,7 +107,7 @@ func TestLoginSessionAndAuthenticatedIndex(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GET /api/v1/session failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("expected HTTP 200 for session, got %d", resp.StatusCode)
 	}
@@ -140,7 +140,7 @@ func TestViewerCannotMutateWebSocketState(t *testing.T) {
 	loginTestUser(t, client, server.URL, "viewer", "secret-pass")
 
 	conn := mustDialAuthenticatedWS(t, client, server.URL)
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	initial := readWSMessage(t, conn)
 	if initial.Type != "state" || !initial.Success {
@@ -178,9 +178,9 @@ func TestTenantIsolationAcrossSessions(t *testing.T) {
 	loginTestUser(t, clientB, server.URL, "bob", "secret-pass")
 
 	connA := mustDialAuthenticatedWS(t, clientA, server.URL)
-	defer connA.Close()
+	defer func() { _ = connA.Close() }()
 	connB := mustDialAuthenticatedWS(t, clientB, server.URL)
-	defer connB.Close()
+	defer func() { _ = connB.Close() }()
 
 	_ = readWSMessage(t, connA)
 	_ = readWSMessage(t, connB)
@@ -273,12 +273,12 @@ func validTestConfig(t *testing.T) Config {
 		BackupInterval:       0,
 		SessionTTL:           time.Hour,
 		BackupRetention:      3,
-		HTTPRequestRate:      100,
-		HTTPBurst:            100,
-		LoginRequestRate:     100,
-		LoginBurst:           100,
-		WebSocketMessageRate: 100,
-		WebSocketBurst:       100,
+		HTTPRequestRate:      10000,
+		HTTPBurst:            10000,
+		LoginRequestRate:     10000,
+		LoginBurst:           10000,
+		WebSocketMessageRate: 10000,
+		WebSocketBurst:       10000,
 		LogLevel:             "error",
 		LogFormat:            "json",
 	}
@@ -359,7 +359,7 @@ func loginTestUser(t *testing.T, client *http.Client, baseURL, username, passwor
 	if err != nil {
 		t.Fatalf("login request failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
 		t.Fatalf("expected login success, got %d with body %s", resp.StatusCode, bodyBytes)
