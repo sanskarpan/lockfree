@@ -1,6 +1,7 @@
 package ringbuffer
 
 import (
+	"reflect"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -82,6 +83,9 @@ func runRingBufferLinearizabilityTest(t *testing.T, overwrite bool) {
 	model := porcupine.Model{
 		Init: func() interface{} {
 			return rbState{Items: []int{}, Capacity: 4, Overwrite: overwrite}
+		},
+		Equal: func(state1, state2 interface{}) bool {
+			return reflect.DeepEqual(state1, state2)
 		},
 		Step: func(state interface{}, input interface{}, output interface{}) (bool, interface{}) {
 			current := state.(rbState)
