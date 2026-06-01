@@ -62,29 +62,29 @@ func BenchmarkMutexRingBufferWrite(b *testing.B) {
 	rb := newMutexRingBuffer[int](10000)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		rb.Write(i)
+		_ = rb.Write(i)
 	}
 }
 
 func BenchmarkRingBufferRead(b *testing.B) {
 	rb := New[int](b.N+1, false)
 	for i := 0; i < b.N; i++ {
-		rb.Write(i)
+		_ = rb.Write(i)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		rb.Read()
+		_, _ = rb.Read()
 	}
 }
 
 func BenchmarkMutexRingBufferRead(b *testing.B) {
 	rb := newMutexRingBuffer[int](b.N + 1)
 	for i := 0; i < b.N; i++ {
-		rb.Write(i)
+		_ = rb.Write(i)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		rb.Read()
+		_, _ = rb.Read()
 	}
 }
 
@@ -92,8 +92,8 @@ func BenchmarkRingBufferWriteRead(b *testing.B) {
 	rb := New[int](1000, false)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		rb.Write(i)
-		rb.Read()
+		_ = rb.Write(i)
+		_, _ = rb.Read()
 	}
 }
 
@@ -101,8 +101,8 @@ func BenchmarkMutexRingBufferWriteRead(b *testing.B) {
 	rb := newMutexRingBuffer[int](1000)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		rb.Write(i)
-		rb.Read()
+		_ = rb.Write(i)
+		_, _ = rb.Read()
 	}
 }
 
@@ -122,7 +122,7 @@ func BenchmarkMutexRingBufferConcurrentWrite(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		i := 0
 		for pb.Next() {
-			rb.Write(i)
+			_ = rb.Write(i)
 			i++
 		}
 	})
@@ -257,6 +257,6 @@ func BenchmarkRingBufferOverwrite(b *testing.B) {
 	rb := New[int](100, true) // Allow overwrite
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		rb.Write(i)
+		_ = rb.Write(i)
 	}
 }
