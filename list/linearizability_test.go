@@ -2,6 +2,7 @@ package list
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -69,6 +70,9 @@ func TestLinearizableListHistory(t *testing.T) {
 	model := porcupine.Model{
 		Init: func() interface{} {
 			return map[int]bool{}
+		},
+		Equal: func(state1, state2 interface{}) bool {
+			return reflect.DeepEqual(state1, state2)
 		},
 		Step: func(state interface{}, input interface{}, output interface{}) (bool, interface{}) {
 			current := cloneSet(state.(map[int]bool))
