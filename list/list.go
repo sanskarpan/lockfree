@@ -101,6 +101,13 @@ func (l *List[K, V]) Insert(key K, value V) bool {
 			return false
 		}
 
+		// If pred was logically deleted, retry. We must not link a new node
+		// behind a node that is about to be physically removed, otherwise the
+		// new node would be silently lost.
+		if pred.marked.Load() {
+			continue
+		}
+
 		// Create new node
 		newNode := &node[K, V]{
 			key:   key,
@@ -110,6 +117,14 @@ func (l *List[K, V]) Insert(key K, value V) bool {
 
 		// Try to insert between pred and curr
 		if atomic.CompareAndSwapPointer(&pred.next, unsafe.Pointer(curr), unsafe.Pointer(newNode)) {
+			// Even though the CAS succeeded, pred may have been marked
+			// concurrently. If so, the new node will be physically removed
+			// along with pred, so we must logically remove it and retry to
+			// keep the operation linearizable.
+			if pred.marked.Load() {
+				newNode.marked.Store(true)
+				continue
+			}
 			l.len.Add(1)
 			return true
 		}
