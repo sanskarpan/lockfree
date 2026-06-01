@@ -48,7 +48,7 @@ func TestAuthenticatedServiceSoak(t *testing.T) {
 			username := "operator-" + strconv.Itoa(id)
 			loginTestUser(t, client, server.URL, username, "secret-pass")
 			conn := mustDialAuthenticatedWS(t, client, server.URL)
-			defer conn.Close()
+			defer func() { _ = conn.Close() }()
 			_ = readWSMessage(t, conn)
 
 			for iter := 0; iter < iterations; iter++ {
@@ -83,7 +83,7 @@ func TestAuthenticatedServiceSoak(t *testing.T) {
 	observer := newCookieClient(t)
 	loginTestUser(t, observer, server.URL, "observer", "secret-pass")
 	conn := mustDialAuthenticatedWS(t, observer, server.URL)
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 	_ = readWSMessage(t, conn)
 	if err := conn.WriteJSON(Message{Type: "counter", Operation: "inc"}); err != nil {
 		t.Fatalf("viewer write failed: %v", err)
