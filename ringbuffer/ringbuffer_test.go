@@ -199,7 +199,7 @@ func TestRingBufferPeek(t *testing.T) {
 	}
 
 	// Write and peek
-	rb.Write(42)
+	_ = rb.Write(42)
 	val, err := rb.Peek()
 	if err != nil {
 		t.Fatalf("Peek failed: %v", err)
@@ -223,9 +223,9 @@ func TestRingBufferPeek(t *testing.T) {
 func TestRingBufferClear(t *testing.T) {
 	rb := New[int](5, false)
 
-	rb.Write(1)
-	rb.Write(2)
-	rb.Write(3)
+	_ = rb.Write(1)
+	_ = rb.Write(2)
+	_ = rb.Write(3)
 
 	rb.Clear()
 
@@ -245,8 +245,8 @@ func TestRingBufferAvailable(t *testing.T) {
 		t.Errorf("Expected available 8, got %d", avail)
 	}
 
-	rb.Write(1)
-	rb.Write(2)
+	_ = rb.Write(1)
+	_ = rb.Write(2)
 
 	if avail := rb.Available(); avail != 6 {
 		t.Errorf("Expected available 6, got %d", avail)
@@ -373,7 +373,7 @@ func TestRingBufferWrapAround(t *testing.T) {
 
 	// Write and read to cause wrap-around
 	for i := 0; i < 10; i++ {
-		rb.Write(i)
+		_ = rb.Write(i)
 		val, _ := rb.Read()
 		if val != i {
 			t.Errorf("Expected %d, got %d", i, val)
@@ -389,8 +389,8 @@ func TestRingBufferWrapAround(t *testing.T) {
 func TestRingBufferTypes(t *testing.T) {
 	t.Run("String", func(t *testing.T) {
 		rb := New[string](5, false)
-		rb.Write("hello")
-		rb.Write("world")
+		_ = rb.Write("hello")
+		_ = rb.Write("world")
 
 		val, _ := rb.Read()
 		if val != "hello" {
@@ -405,7 +405,7 @@ func TestRingBufferTypes(t *testing.T) {
 		}
 
 		rb := New[Person](5, false)
-		rb.Write(Person{"Alice", 30})
+		_ = rb.Write(Person{"Alice", 30})
 
 		val, _ := rb.Read()
 		if val.Name != "Alice" || val.Age != 30 {
