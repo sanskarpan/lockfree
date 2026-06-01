@@ -21,7 +21,6 @@ import (
 
 type requestIDContextKey struct{}
 type traceIDContextKey struct{}
-type principalContextKey struct{}
 
 func newLogger(cfg Config) *slog.Logger {
 	level := new(slog.LevelVar)
