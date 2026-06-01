@@ -200,7 +200,10 @@ func (p *PersistenceManager) SaveNow(ctx context.Context, reason string) error {
 		return err
 	}
 
-	if p.cfg.BackupInterval == 0 || time.Since(p.lastBackup) >= p.cfg.BackupInterval {
+	p.mu.Lock()
+	needBackup := p.cfg.BackupInterval == 0 || time.Since(p.lastBackup) >= p.cfg.BackupInterval
+	p.mu.Unlock()
+	if needBackup {
 		if _, err := p.backupBytes(data); err != nil {
 			p.log.Error("backup write failed", "reason", reason, "error", err)
 		}
@@ -230,9 +233,12 @@ func (p *PersistenceManager) backupBytes(data []byte) (string, error) {
 		}
 		return "", err
 	}
-	p.lastBackup = time.Now()
+	now := time.Now()
+	p.mu.Lock()
+	p.lastBackup = now
+	p.mu.Unlock()
 	if p.observe != nil {
-		p.observe("backup_success", p.lastBackup)
+		p.observe("backup_success", now)
 	}
 	if err := p.trimBackups(); err != nil {
 		p.log.Warn("backup retention trim failed", "error", err)
