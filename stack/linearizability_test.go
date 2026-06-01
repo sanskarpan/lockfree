@@ -1,6 +1,7 @@
 package stack
 
 import (
+	"reflect"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -66,6 +67,9 @@ func TestLinearizableStackHistory(t *testing.T) {
 	model := porcupine.Model{
 		Init: func() interface{} {
 			return []int{}
+		},
+		Equal: func(state1, state2 interface{}) bool {
+			return reflect.DeepEqual(state1, state2)
 		},
 		Step: func(state interface{}, input interface{}, output interface{}) (bool, interface{}) {
 			current := append([]int(nil), state.([]int)...)
